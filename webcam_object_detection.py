@@ -1,7 +1,7 @@
 import cv2
 from cv2 import getTickCount, getTickFrequency
 
-from yolov8 import YOLOv8
+from yolov8onnx import YOLOv8
 
 # Initialize the webcam
 cap = cv2.VideoCapture(0)
@@ -23,6 +23,9 @@ while cap.isOpened():
     # Update object localizer
     boxes, scores, class_ids = yolov8_detector(frame)
     combined_img = yolov8_detector.draw_detections(frame)
+
+    for box in boxes:
+        print(box)
 
 
     # 中间放自己的显示程序

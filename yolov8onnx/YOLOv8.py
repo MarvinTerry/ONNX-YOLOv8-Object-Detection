@@ -2,8 +2,9 @@ import time
 import cv2
 import numpy as np
 import onnxruntime
+from cv2 import getTickCount, getTickFrequency
 
-from yolov8.utils import xywh2xyxy, draw_detections, multiclass_nms
+from yolov8onnx.utils import xywh2xyxy, draw_detections, multiclass_nms
 
 
 class YOLOv8:
@@ -27,12 +28,26 @@ class YOLOv8:
 
 
     def detect_objects(self, image):
+        loop_start = getTickCount()
+
         input_tensor = self.prepare_input(image)
 
-        # Perform inference on the image
+        loop_time = getTickCount() - loop_start
+        print(f"prepare:{loop_time * 1000 / (getTickFrequency()):.2f}ms")
+        
+        loop_start = getTickCount()
+
         outputs = self.inference(input_tensor)
 
+        loop_time = getTickCount() - loop_start
+        print(f"inference:{loop_time * 1000 / (getTickFrequency()):.2f}ms")
+        
+        loop_start = getTickCount()
+
         self.boxes, self.scores, self.class_ids = self.process_output(outputs)
+
+        loop_time = getTickCount() - loop_start
+        print(f"output:{loop_time * 1000 / (getTickFrequency()):.2f}ms")
 
         return self.boxes, self.scores, self.class_ids
 
@@ -53,7 +68,7 @@ class YOLOv8:
 
 
     def inference(self, input_tensor):
-        start = time.perf_counter()
+        # start = time.perf_counter()
         outputs = self.session.run(self.output_names, {self.input_names[0]: input_tensor})
 
         # print(f"Inference time: {(time.perf_counter() - start)*1000:.2f} ms")
@@ -79,7 +94,7 @@ class YOLOv8:
         # Apply non-maxima suppression to suppress weak, overlapping bounding boxes
         # indices = nms(boxes, scores, self.iou_threshold)
         indices = multiclass_nms(boxes, scores, class_ids, self.iou_threshold)
-
+        
         return boxes[indices], scores[indices], class_ids[indices]
 
     def extract_boxes(self, predictions):

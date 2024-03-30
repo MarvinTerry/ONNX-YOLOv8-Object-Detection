@@ -1,7 +1,7 @@
 import cv2
 from cap_from_youtube import cap_from_youtube
 
-from yolov8 import YOLOv8
+from yolov8onnx import YOLOv8
 
 # # Initialize video
 # cap = cv2.VideoCapture("input.mp4")
